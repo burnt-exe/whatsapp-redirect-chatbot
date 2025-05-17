@@ -26,7 +26,7 @@ jobs:
           mkdir -p public src .github/workflows
 
       - name: Generate Core Project Files
-        run: |
+        run: | 
           cat <<"EOF_HTML" > public/index.html
           <!DOCTYPE html>
           <html lang="en">
@@ -44,14 +44,14 @@ jobs:
           </html>
           EOF_HTML
           
-                    cat <<"EOF_JS" > src/config.js
-          export const departments = {
+          cat <<"EOF_JS" > src/config.js
+            export const departments = {
             sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },
             support: { number: '27831111111', message: 'Hello, I need technical assistance' }
           };
           EOF_JS
           
-                    cat <<"EOF_JS2" > src/redirect.js
+          cat <<"EOF_JS2" > src/redirect.js
           import { departments } from './config.js';
           
           window.redirectToWhatsApp = function (departmentKey) {
@@ -62,7 +62,7 @@ jobs:
           };
           EOF_JS2
           
-                    cat <<"EOF_MD" > README.md
+          cat <<"EOF_MD" > README.md
           # WhatsApp Redirect Chatbot
           
           A static webpage to redirect users to appropriate WhatsApp numbers using buttons.
@@ -71,11 +71,11 @@ jobs:
           Open public/index.html or deploy via GitHub Pages.
           EOF_MD
           
-                    echo "node_modules/
+          echo "node_modules/
           dist/
           .env" > .gitignore
           
-                    cat <<"EOF_LIC" > LICENSE
+          cat <<"EOF_LIC" > LICENSE
           MIT License
           
           Permission is hereby granted, free of charge, to any person obtaining a copy

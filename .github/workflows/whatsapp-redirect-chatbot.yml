@@ -3,7 +3,7 @@ name: WhatsApp Redirect Chatbot Maintenance
 
 on:
   schedule:
-    - cron: "0 5 * * 1"
+    - cron: '0 5 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -30,78 +30,127 @@ jobs:
       - name: Generate index.html
         continue-on-error: true
         run: |
-          cat > public/index.html <<'EOF'
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhatsApp Redirect Chatbot</title>
-</head>
-<body>
-  <h1>Choose a Department</h1>
-  <button onclick="redirectToWhatsApp('sales')">Sales</button>
-  <button onclick="redirectToWhatsApp('support')">Support</button>
-  <script src="../src/redirect.js"></script>
-</body>
-</html>
-EOF
+          cat <<"EOF" > public/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>WhatsApp Redirect Chatbot</title>
+          </head>
+          <body>
+            <h1>Choose a Department</h1>
+            <button onclick="redirectToWhatsApp('sales')">Sales</button>
+            <button onclick="redirectToWhatsApp('support')">Support</button>
+            <script src="../src/redirect.js"></script>
+          </body>
+          </html>
+          EOF
 
       - name: Generate config.js
         continue-on-error: true
         run: |
-          cat > src/config.js <<'EOF'
-export const departments = {
-  sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },
-  support: { number: '27831111111', message: 'Hello, I need technical assistance' }
-};
-EOF
+          cat <<"EOF" > src/config.js
+          export const departments = {
+            sales: { number: process.env.SALES_NUMBER || 'default_sales_number', message: 'Hi Sales Team, I need pricing info' },
+            support: { number: process.env.SUPPORT_NUMBER || 'default_support_number', message: 'Hello, I need technical assistance' }
+          };
+          EOF
 
       - name: Generate redirect.js
         continue-on-error: true
         run: |
-          cat > src/redirect.js <<'EOF'
-import { departments } from './config.js';
+          cat <<"EOF" > src/redirect.js
+          import { departments } from './config.js';
 
-window.redirectToWhatsApp = function (departmentKey) {
-  const dept = departments[departmentKey];
-  if (!dept) return alert('Invalid department');
-  const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;
-  window.open(url, '_blank');
-};
-EOF
+          window.redirectToWhatsApp = function (departmentKey) {
+            const dept = departments[departmentKey];
+            if (!dept) return alert('Invalid department');
+            const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;
+            window.open(url, '_blank');
+          };
+          EOF
+
+      - name: Generate .env
+        continue-on-error: true
+        run: |
+          cat <<"EOF" > .env
+          SALES_NUMBER=default_sales_number
+          SUPPORT_NUMBER=default_support_number
+          EOF
+
+      - name: Generate package.json
+        continue-on-error: true
+        run: |
+          cat <<"EOF" > package.json
+          {
+            "name": "whatsapp-redirect-chatbot",
+            "version": "1.0.0",
+            "description": "A static webpage to redirect users to appropriate WhatsApp numbers using buttons.",
+            "main": "server.js",
+            "scripts": {
+              "start": "node server.js",
+              "test": "echo \"Error: no test specified\" && exit 1"
+            },
+            "author": "Skunkworks",
+            "license": "MIT",
+            "dependencies": {
+              "express": "^4.18.2"
+            }
+          }
+          EOF
+
+      - name: Generate server.js
+        continue-on-error: true
+        run: |
+          cat <<"EOF" > server.js
+          const express = require('express');
+          const path = require('path');
+          const app = express();
+          const PORT = process.env.PORT || 3000;
+
+          app.use(express.static(path.join(__dirname, 'public')));
+
+          app.get('/', (req, res) => {
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+          });
+
+          app.listen(PORT, () => {
+            console.log(`Server is running on http://localhost:${PORT}`);
+          });
+          EOF
 
       - name: Generate README.md
         continue-on-error: true
         run: |
-          cat > README.md <<'EOF'
-# WhatsApp Redirect Chatbot
+          cat <<"EOF" > README.md
+          # WhatsApp Redirect Chatbot
 
-A static webpage to redirect users to appropriate WhatsApp numbers using buttons.
+          A static webpage to redirect users to appropriate WhatsApp numbers using buttons.
 
-## Usage
-Open public/index.html or deploy via GitHub Pages.
-EOF
+          ## Usage
+          Open public/index.html or deploy via GitHub Pages.
+          EOF
 
-      - name: Generate .gitignore
-        continue-on-error: true
-        run: echo -e "node_modules/\ndist/\n.env" > .gitignore
+                - name: Generate .gitignore
+                  continue-on-error: true
+                  run: echo -e "node_modules/\ndist/\n.env" > .gitignore
 
-      - name: Generate LICENSE
-        continue-on-error: true
-        run: |
-          cat > LICENSE <<'EOF'
-MIT License
+                - name: Generate LICENSE
+                  continue-on-error: true
+                  run: |
+                    cat <<"EOF" > LICENSE
+          MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+          Permission is hereby granted, free of charge, to any person obtaining a copy
+          of this software and associated documentation files (the "Software"), to deal
+          in the Software without restriction, including without limitation the rights
+          to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+          copies of the Software, and to permit persons to whom the Software is
+          furnished to do so, subject to the following conditions:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
-EOF
+          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+          EOF
 
       - name: Run Prettier (Code Formatting)
         continue-on-error: true

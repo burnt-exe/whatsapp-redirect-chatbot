@@ -191,3 +191,11 @@ jobs:
                -X POST \
                -d '{"username": "GitHub Bot", "content": "✅ Workflow succeeded. Site deployed and code updated: https://github.com/burnt-exe/whatsapp-redirect-chatbot/actions"}' \
                ${{ secrets.DISCORD_WEBHOOK }}
+      
+      - name: Force Add All Files
+        run: |
+          git config --global user.name 'skunkworks-bot'
+          git config --global user.email 'automation@skunkworks.africa'
+          git add -A
+          git commit -am "🔧 Initialize generated files" || echo "No changes to commit"
+          git push origin HEAD || echo "Push skipped or failed"

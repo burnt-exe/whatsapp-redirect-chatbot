@@ -1,23 +1,5 @@
-whatsapp-redirect-chatbot/
-├── public/
-│   └── index.html
-├── src/
-│   ├── config.js
-│   └── redirect.js
-├── README.md
-├── .gitignore
-├── LICENSE
-└── .github/
-    └── workflows/
-        └── Whatsapp-redirect-chatbot.yml
-
-// .github/workflows/Whatsapp-redirect-chatbot.yml
+// .github/workflows/whatsapp-redirect-chatbot.yml
 name: WhatsApp Redirect Chatbot Maintenance
-
-description: >
-  Automated workflow to maintain and validate the WhatsApp Redirect Chatbot repository.
-  This ensures critical file structures, content, formatting, and updates are applied
-  weekly or on manual trigger, with built-in resilience to warnings and errors.
 
 on:
   schedule:
@@ -45,7 +27,20 @@ jobs:
 
       - name: Generate Core Project Files
         run: |
-          echo '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <title>WhatsApp Redirect Chatbot</title>\n</head>\n<body>\n  <h1>Choose a Department</h1>\n  <button onclick="redirectToWhatsApp(\'sales\')">Sales</button>\n  <button onclick="redirectToWhatsApp(\'support\')">Support</button>\n  <script src="../src/redirect.js"></script>\n</body>\n</html>' > public/index.html
+          echo '<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp Redirect Chatbot</title>
+</head>
+<body>
+  <h1>Choose a Department</h1>
+  <button onclick="redirectToWhatsApp(\'sales\')">Sales</button>
+  <button onclick="redirectToWhatsApp(\'support\')">Support</button>
+  <script src="../src/redirect.js"></script>
+</body>
+</html>' > public/index.html
 
           echo "export const departments = {\n  sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },\n  support: { number: '27831111111', message: 'Hello, I need technical assistance' }\n};" > src/config.js
 
@@ -60,7 +55,13 @@ jobs:
       - name: Run Prettier (Code Formatting)
         run: |
           npm install --global prettier || echo 'Prettier installation failed'
-          prettier --write "**/*.{js,jsx,json,md,html,css}" || echo 'Prettier failed, continuing anyway'
+          prettier --write "**/*.{js,jsx,json,md,html,css,yml,yaml,ts,tsx}" || echo 'Prettier failed, continuing anyway'
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
 
       - name: Git Commit & Push Changes
         run: |
@@ -79,3 +80,55 @@ jobs:
         run: |
           echo "❌ Maintenance encountered a failure. Review logs above for diagnostics."
           exit 1
+
+      - name: Notify via Email on Success
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "✅ WhatsApp Redirect Chatbot - Maintenance Success"
+          to: raydo@skunkworks.africa
+          from: GitHub Actions Bot <automation@skunkworks.africa>
+          body: |
+            Weekly maintenance of the WhatsApp Redirect Chatbot completed successfully.
+            ✅ Repository synced and validated.
+            📁 Files updated and formatted.
+            🌐 Deployed to GitHub Pages.
+            View it here: https://github.com/burnt-exe/whatsapp-redirect-chatbot/actions
+
+      - name: Notify via Email on Failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "❌ WhatsApp Redirect Chatbot - Maintenance Failed"
+          to: raydo@skunkworks.africa
+          from: GitHub Actions Bot <automation@skunkworks.africa>
+          body: |
+            The scheduled maintenance workflow failed.
+            ❌ Errors were encountered during execution.
+            Please review logs: https://github.com/burnt-exe/whatsapp-redirect-chatbot/actions
+
+      - name: Slack Notification (on failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: '#FF0000'
+          SLACK_TITLE: '❌ WhatsApp Chatbot Maintenance Failed'
+          SLACK_MESSAGE: 'Please check the logs at https://github.com/burnt-exe/whatsapp-redirect-chatbot/actions'
+
+      - name: Slack Notification (on success)
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: '#00FF00'
+          SLACK_TITLE: '✅ WhatsApp Chatbot Maintenance Successful'
+          SLACK_MESSAGE: 'Site deployed and code updated: https://github.com/burnt-exe/whatsapp-redirect-chatbot/actions'

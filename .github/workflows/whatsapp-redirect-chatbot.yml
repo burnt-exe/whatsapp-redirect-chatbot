@@ -1,4 +1,4 @@
-// .github/workflows/whatsapp-redirect-chatbot.yml
+.github/workflows/whatsapp-redirect-chatbot.yml
 name: WhatsApp Redirect Chatbot Maintenance
 
 on:

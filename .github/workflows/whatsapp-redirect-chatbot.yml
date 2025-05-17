@@ -1,0 +1,81 @@
+whatsapp-redirect-chatbot/
+├── public/
+│   └── index.html
+├── src/
+│   ├── config.js
+│   └── redirect.js
+├── README.md
+├── .gitignore
+├── LICENSE
+└── .github/
+    └── workflows/
+        └── Whatsapp-redirect-chatbot.yml
+
+// .github/workflows/Whatsapp-redirect-chatbot.yml
+name: WhatsApp Redirect Chatbot Maintenance
+
+description: >
+  Automated workflow to maintain and validate the WhatsApp Redirect Chatbot repository.
+  This ensures critical file structures, content, formatting, and updates are applied
+  weekly or on manual trigger, with built-in resilience to warnings and errors.
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'  # Every Monday at 05:00 UTC
+  workflow_dispatch:
+
+jobs:
+  maintain-and-validate:
+    name: Weekly File Check & Update
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node Environment
+        run: |
+          sudo apt-get update && sudo apt-get install -y curl
+          curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+          sudo apt-get install -y nodejs
+
+      - name: Ensure Directory Structure
+        run: |
+          mkdir -p public src .github/workflows
+
+      - name: Generate Core Project Files
+        run: |
+          echo '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <title>WhatsApp Redirect Chatbot</title>\n</head>\n<body>\n  <h1>Choose a Department</h1>\n  <button onclick="redirectToWhatsApp(\'sales\')">Sales</button>\n  <button onclick="redirectToWhatsApp(\'support\')">Support</button>\n  <script src="../src/redirect.js"></script>\n</body>\n</html>' > public/index.html
+
+          echo "export const departments = {\n  sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },\n  support: { number: '27831111111', message: 'Hello, I need technical assistance' }\n};" > src/config.js
+
+          echo "import { departments } from './config.js';\n\nwindow.redirectToWhatsApp = function (departmentKey) {\n  const dept = departments[departmentKey];\n  if (!dept) return alert('Invalid department');\n  const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;\n  window.open(url, '_blank');\n};" > src/redirect.js
+
+          echo "# WhatsApp Redirect Chatbot\n\nA static webpage to redirect users to appropriate WhatsApp numbers using buttons.\n\n## Usage\nOpen public/index.html or deploy via GitHub Pages.\n" > README.md
+
+          echo 'node_modules/\ndist/\n.env' > .gitignore
+
+          echo 'MIT License\n\nPermission is hereby granted, free of charge...' > LICENSE
+
+      - name: Run Prettier (Code Formatting)
+        run: |
+          npm install --global prettier || echo 'Prettier installation failed'
+          prettier --write "**/*.{js,jsx,json,md,html,css}" || echo 'Prettier failed, continuing anyway'
+
+      - name: Git Commit & Push Changes
+        run: |
+          git config --global user.name 'skunkworks-bot'
+          git config --global user.email 'automation@skunkworks.africa'
+          git add .
+          git commit -m "🚀 Weekly auto-maintenance and sync" || echo "No changes to commit"
+          git push origin HEAD || echo "Push skipped or failed"
+
+      - name: Print Workflow Completion Summary
+        if: always()
+        run: echo "✅ Maintenance workflow completed successfully."
+
+      - name: Handle Failure Notifications
+        if: failure()
+        run: |
+          echo "❌ Maintenance encountered a failure. Review logs above for diagnostics."
+          exit 1

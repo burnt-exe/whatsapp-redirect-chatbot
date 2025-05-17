@@ -27,22 +27,23 @@ jobs:
 
       - name: Generate Core Project Files
         run: |
-          cat <<EOF > public/index.html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhatsApp Redirect Chatbot</title>
-</head>
-<body>
-  <h1>Choose a Department</h1>
-  <button onclick="redirectToWhatsApp('sales')">Sales</button>
-  <button onclick="redirectToWhatsApp('support')">Support</button>
-  <script src="../src/redirect.js"></script>
-</body>
-</html>
-EOF
+          cat <<"EOF_HTML" > public/index.html
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>WhatsApp Redirect Chatbot</title>
+          </head>
+          <body>
+            <h1>Choose a Department</h1>
+            <button onclick="redirectToWhatsApp('sales')">Sales</button>
+            <button onclick="redirectToWhatsApp('support')">Support</button>
+            <script src="../src/redirect.js"></script>
+          </body>
+          </html>
+          EOF_HTML
+
 
           cat <<EOF > src/config.js
 export const departments = {

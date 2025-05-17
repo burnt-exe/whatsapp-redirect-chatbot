@@ -3,7 +3,7 @@ name: WhatsApp Redirect Chatbot Maintenance
 
 on:
   schedule:
-    - cron: '0 5 * * 1'  # Every Monday at 05:00 UTC
+    - cron: '0 5 * * 1'
   workflow_dispatch:
 
 jobs:
@@ -22,71 +22,77 @@ jobs:
           sudo apt-get install -y nodejs
 
       - name: Ensure Directory Structure
-        run: |
-          mkdir -p public src .github/workflows
+        run: mkdir -p public src .github/workflows
 
-      - name: Generate Core Project Files
-        run: | 
-          cat <<"EOF_HTML" > public/index.html
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>WhatsApp Redirect Chatbot</title>
-          </head>
-          <body>
-            <h1>Choose a Department</h1>
-            <button onclick="redirectToWhatsApp('sales')">Sales</button>
-            <button onclick="redirectToWhatsApp('support')">Support</button>
-            <script src="../src/redirect.js"></script>
-          </body>
-          </html>
-          EOF_HTML
-          
-          cat <<"EOF_JS" > src/config.js
-            export const departments = {
-            sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },
-            support: { number: '27831111111', message: 'Hello, I need technical assistance' }
-          };
-          EOF_JS
-          
-          cat <<"EOF_JS2" > src/redirect.js
-            import { departments } from './config.js';
-          
-            window.redirectToWhatsApp = function (departmentKey) {
-            const dept = departments[departmentKey];
-            if (!dept) return alert('Invalid department');
-            const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;
-            window.open(url, '_blank');
-          };
-          EOF_JS2
-          
-          cat <<"EOF_MD" > README.md
-          # WhatsApp Redirect Chatbot
-          
-          A static webpage to redirect users to appropriate WhatsApp numbers using buttons.
-          
-          ## Usage
-          Open public/index.html or deploy via GitHub Pages.
-          EOF_MD
-          
-          echo "node_modules/
-          dist/
-          .env" > .gitignore
-          
-          cat <<"EOF_LIC" > LICENSE
-          MIT License
-          
-          Permission is hereby granted, free of charge, to any person obtaining a copy
-          of this software and associated documentation files (the "Software"), to deal
-          in the Software without restriction, including without limitation the rights
-          to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-          copies of the Software, and to permit persons to whom the Software is
-          furnished to do so, subject to the following conditions:
-          
-          THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
-          EOF_LIC
+      - name: Generate index.html
+        run: |
+          cat <<"EOF" > public/index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhatsApp Redirect Chatbot</title>
+</head>
+<body>
+  <h1>Choose a Department</h1>
+  <button onclick="redirectToWhatsApp('sales')">Sales</button>
+  <button onclick="redirectToWhatsApp('support')">Support</button>
+  <script src="../src/redirect.js"></script>
+</body>
+</html>
+EOF
+
+      - name: Generate config.js
+        run: |
+          cat <<"EOF" > src/config.js
+export const departments = {
+  sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },
+  support: { number: '27831111111', message: 'Hello, I need technical assistance' }
+};
+EOF
+
+      - name: Generate redirect.js
+        run: |
+          cat <<"EOF" > src/redirect.js
+import { departments } from './config.js';
+
+window.redirectToWhatsApp = function (departmentKey) {
+  const dept = departments[departmentKey];
+  if (!dept) return alert('Invalid department');
+  const url = `https://wa.me/\${dept.number}?text=\${encodeURIComponent(dept.message)}`;
+  window.open(url, '_blank');
+};
+EOF
+
+      - name: Generate README.md
+        run: |
+          cat <<"EOF" > README.md
+# WhatsApp Redirect Chatbot
+
+A static webpage to redirect users to appropriate WhatsApp numbers using buttons.
+
+## Usage
+Open public/index.html or deploy via GitHub Pages.
+EOF
+
+      - name: Generate .gitignore
+        run: echo -e "node_modules/\ndist/\n.env" > .gitignore
+
+      - name: Generate LICENSE
+        run: |
+          cat <<"EOF" > LICENSE
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
+EOF
 
       - name: Run Prettier (Code Formatting)
         run: |

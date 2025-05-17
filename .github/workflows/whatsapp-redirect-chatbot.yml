@@ -52,9 +52,9 @@ jobs:
           EOF_JS
           
           cat <<"EOF_JS2" > src/redirect.js
-          import { departments } from './config.js';
+            import { departments } from './config.js';
           
-          window.redirectToWhatsApp = function (departmentKey) {
+            window.redirectToWhatsApp = function (departmentKey) {
             const dept = departments[departmentKey];
             if (!dept) return alert('Invalid department');
             const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;

@@ -1,3 +1,4 @@
+# .github/workflows/whatsapp-redirect-chatbot.yml
 name: WhatsApp Redirect Chatbot Maintenance
 
 on:
@@ -26,30 +27,30 @@ jobs:
 
       - name: Generate Core Project Files
         run: |
-          echo '<!DOCTYPE html>
-<html lang="en">
+          echo "<!DOCTYPE html>
+<html lang=\"en\">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset=\"UTF-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />
   <title>WhatsApp Redirect Chatbot</title>
 </head>
 <body>
   <h1>Choose a Department</h1>
-  <button onclick="redirectToWhatsApp(\'sales\')">Sales</button>
-  <button onclick="redirectToWhatsApp(\'support\')">Support</button>
-  <script src="../src/redirect.js"></script>
+  <button onclick=\"redirectToWhatsApp('sales')\">Sales</button>
+  <button onclick=\"redirectToWhatsApp('support')\">Support</button>
+  <script src=\"../src/redirect.js\"></script>
 </body>
-</html>' > public/index.html
+</html>" > public/index.html
 
           echo "export const departments = {\n  sales: { number: '27830000000', message: 'Hi Sales Team, I need pricing info' },\n  support: { number: '27831111111', message: 'Hello, I need technical assistance' }\n};" > src/config.js
 
           echo "import { departments } from './config.js';\n\nwindow.redirectToWhatsApp = function (departmentKey) {\n  const dept = departments[departmentKey];\n  if (!dept) return alert('Invalid department');\n  const url = `https://wa.me/${dept.number}?text=${encodeURIComponent(dept.message)}`;\n  window.open(url, '_blank');\n};" > src/redirect.js
 
-          echo "# WhatsApp Redirect Chatbot\n\nA static webpage to redirect users to appropriate WhatsApp numbers using buttons.\n\n## Usage\nOpen public/index.html or deploy via GitHub Pages.\n" > README.md
+          echo "# WhatsApp Redirect Chatbot\n\nA static webpage to redirect users to appropriate WhatsApp numbers using buttons.\n\n## Usage\nOpen public/index.html or deploy via GitHub Pages." > README.md
 
-          echo 'node_modules/\ndist/\n.env' > .gitignore
+          echo "node_modules/\ndist/\n.env" > .gitignore
 
-          echo 'MIT License\n\nPermission is hereby granted, free of charge...' > LICENSE
+          echo "MIT License\n\nPermission is hereby granted, free of charge..." > LICENSE
 
       - name: Run Prettier (Code Formatting)
         run: |
